@@ -229,7 +229,7 @@ public partial class MainWindow : Window
             p.Age += 0.025 * _settings.SmokeSpeed;
             p.X += p.Drift + Math.Sin(p.Phase + p.Age * 5.2) * 0.24 * scale;
             p.Y -= (0.8 + _settings.SmokeSpeed * 0.7) * scale;
-            p.Life -= 0.0065 * _settings.SmokeSpeed;
+            p.Life -= 0.025 * _settings.SmokeSpeed;
 
             if (p.Life <= 0 || p.Age >= 1.0 || p.Y < 8)
             {

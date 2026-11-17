@@ -17,6 +17,7 @@ public partial class SettingsWindow : Window
             WindowHeight = current.WindowHeight,
             WindowOpacity = current.WindowOpacity,
             AlwaysOnTop = current.AlwaysOnTop,
+            DesktopLayerMode = current.DesktopLayerMode,
             SmokeDensity = current.SmokeDensity,
             SmokeSpeed = current.SmokeSpeed,
             IncenseCount = current.IncenseCount,
@@ -33,7 +34,7 @@ public partial class SettingsWindow : Window
         DensitySlider.Value = current.SmokeDensity;
         SpeedSlider.Value = current.SmokeSpeed;
         OpacitySlider.Value = current.WindowOpacity;
-        TopmostCheck.IsChecked = current.AlwaysOnTop;
+        TopmostCheck.IsChecked = !current.DesktopLayerMode && current.AlwaysOnTop;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -63,6 +64,7 @@ public partial class SettingsWindow : Window
         Result.SmokeSpeed = SpeedSlider.Value;
         Result.WindowOpacity = OpacitySlider.Value;
         Result.AlwaysOnTop = TopmostCheck.IsChecked == true;
+        Result.DesktopLayerMode = !Result.AlwaysOnTop;
         DialogResult = true;
     }
 

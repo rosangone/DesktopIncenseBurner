@@ -243,9 +243,9 @@ public partial class MainWindow : Window
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
             {
-                ctx.BeginFigure(new Point(x, y + h), false, false);
-                ctx.BezierTo(new Point(x - spread * 0.15, y + h * 0.72), new Point(x + swayA * 0.25, y + h * 0.58), new Point(x + swayA * 0.42, y + h * 0.43), true, false);
-                ctx.BezierTo(new Point(x + swayA * 0.72, y + h * 0.28), new Point(x + swayB, y + h * 0.18), new Point(x + swayB * 0.82, y), true, false);
+                ctx.BeginFigure(new Point(x, y + h * 0.46), false, false);
+                ctx.BezierTo(new Point(x - spread * 0.15, y + h * 0.31), new Point(x + swayA * 0.25, y + h * 0.22), new Point(x + swayA * 0.42, y + h * 0.16), true, false);
+                ctx.BezierTo(new Point(x + swayA * 0.72, y + h * 0.10), new Point(x + swayB, y + h * 0.05), new Point(x + swayB * 0.82, y), true, false);
             }
             geometry.Freeze();
             double fadeIn = Math.Clamp(progress * 5.0, 0, 1), fadeOut = Math.Clamp((1.0 - progress) * 1.35, 0, 1);
@@ -258,8 +258,8 @@ public partial class MainWindow : Window
             var softGeometry = new StreamGeometry();
             using (var ctx = softGeometry.Open())
             {
-                ctx.BeginFigure(new Point(x - p.Width * 0.9, y + h * 0.94), false, false);
-                ctx.BezierTo(new Point(x - spread * 0.25, y + h * 0.68), new Point(x + swayA * 0.12 - p.Width, y + h * 0.38), new Point(x + swayB * 0.65 - p.Width * 1.4, y - scale), true, false);
+                ctx.BeginFigure(new Point(x - p.Width * 0.9, y + h * 0.42), false, false);
+                ctx.BezierTo(new Point(x - spread * 0.25, y + h * 0.27), new Point(x + swayA * 0.12 - p.Width, y + h * 0.13), new Point(x + swayB * 0.65 - p.Width * 1.4, y - scale), true, false);
             }
             softGeometry.Freeze();
             SceneCanvas.Children.Add(new System.Windows.Shapes.Path { Data = softGeometry,

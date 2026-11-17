@@ -26,7 +26,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         Width = Math.Clamp(_settings.WindowWidth, 260, 900);
         Height = Math.Clamp(_settings.WindowHeight, 300, 900);
-        Opacity = Math.Clamp(_settings.WindowOpacity, 0.35, 1.0);
+        Opacity = 1.0;
+        UpdateBackgroundAppearance();
         Topmost = !_settings.DesktopLayerMode && _settings.AlwaysOnTop;
         _animationTimer.Tick += (_, _) => AnimateScene();
         _burnTimer.Tick += (_, _) => UpdateBurnTimer();
@@ -43,6 +44,14 @@ public partial class MainWindow : Window
     private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         if (IsLoaded) DrawBurner();
+    }
+
+    private void UpdateBackgroundAppearance()
+    {
+        // 透明度只作用于窗口底色；香炉、香支和烟雾不随之变淡。
+        byte alpha = (byte)Math.Round(Math.Clamp(_settings.WindowOpacity, 0, 1) * 233);
+        MainBorder.Background = new SolidColorBrush(Color.FromArgb(alpha, 27, 23, 20));
+        MainBorder.BorderBrush = new SolidColorBrush(Color.FromArgb((byte)Math.Min(190, alpha + 35), 201, 154, 80));
     }
 
     private void SendToDesktopLayer()
@@ -197,98 +206,66 @@ public partial class MainWindow : Window
     private void AnimateScene()
     {
         if (!IsLoaded) return;
-
-        // 每帧只更新细长的曲线烟丝，不再生成圆形烟团。
         for (int i = SceneCanvas.Children.Count - 1; i >= 0; i--)
-            if (SceneCanvas.Children[i] is System.Windows.Shapes.Path path && path.Tag as string == "smoke")
-                SceneCanvas.Children.RemoveAt(i);
+            if (SceneCanvas.Children[i] is System.Windows.Shapes.Path path && path.Tag as string == "smoke") SceneCanvas.Children.RemoveAt(i);
 
         double scale = Math.Min(ActualWidth / 360.0, ActualHeight / 420.0);
+        double baseY = ActualHeight * 0.73 - 166 * scale;
         if (_isBurning && !_isPaused)
         {
-            int spawn = Math.Clamp(_settings.SmokeDensity / 35, 1, 3);
+            int count = Math.Clamp(_settings.IncenseCount, 1, 3);
+            double[] offsets = count switch { 1 => new[] { 0.0 }, 2 => new[] { -9.0, 9.0 }, _ => new[] { -18.0, 0.0, 18.0 } };
+            int spawn = Math.Clamp(_settings.SmokeDensity / 28, 1, 4);
             for (int i = 0; i < spawn; i++)
             {
-                _smoke.Add(new SmokeParticle
-                {
-                    X = ActualWidth / 2 + (_random.NextDouble() - 0.5) * 12 * scale,
-                    Y = ActualHeight * 0.73 - 176 * scale,
-                    Age = 0,
-                    Life = 1.0,
-                    Phase = _random.NextDouble() * Math.PI * 2,
-                    Drift = (_random.NextDouble() - 0.5) * 0.7 * scale,
-                    Width = (1.0 + _random.NextDouble() * 1.1) * scale,
-                    Height = (54 + _random.NextDouble() * 48) * scale
-                });
+                double offset = offsets[_random.Next(offsets.Length)];
+                _smoke.Add(new SmokeParticle { X = ActualWidth / 2 + (offset - 5) * scale + (_random.NextDouble() - 0.5) * 3 * scale,
+                    Y = baseY + (_random.NextDouble() - 0.5) * 5 * scale, Age = 0, Life = 1.0,
+                    Phase = _random.NextDouble() * Math.PI * 2, Drift = (_random.NextDouble() - 0.5) * 0.42 * scale,
+                    Width = (1.2 + _random.NextDouble() * 1.3) * scale, Height = (72 + _random.NextDouble() * 70) * scale });
             }
         }
-
         for (int i = _smoke.Count - 1; i >= 0; i--)
         {
             var p = _smoke[i];
-            p.Age += 0.025 * _settings.SmokeSpeed;
-            p.X += p.Drift + Math.Sin(p.Phase + p.Age * 5.2) * 0.24 * scale;
-            p.Y -= (0.8 + _settings.SmokeSpeed * 0.7) * scale;
-            p.Life -= 0.025 * _settings.SmokeSpeed;
+            p.Age += 0.018 * _settings.SmokeSpeed;
+            p.X += p.Drift + Math.Sin(p.Phase + p.Age * 3.8) * 0.20 * scale;
+            p.Y -= (0.72 + _settings.SmokeSpeed * 0.52) * scale;
+            p.Life -= 0.012 * _settings.SmokeSpeed;
+            if (p.Life <= 0 || p.Age >= 1.6 || p.Y < 0) { _smoke.RemoveAt(i); continue; }
 
-            if (p.Life <= 0 || p.Age >= 1.0 || p.Y < 8)
-            {
-                _smoke.RemoveAt(i);
-                continue;
-            }
-
-            // 烟丝随上升逐渐变长、变淡，并由多段贝塞尔曲线形成轻柔摆动。
-            double growth = Math.Min(1.0, p.Age * 2.4);
-            double h = p.Height * growth;
-            double sway = Math.Sin(p.Phase + p.Age * 5.2) * 10 * scale;
-            double sway2 = Math.Sin(p.Phase + p.Age * 7.4 + 1.1) * 13 * scale;
-            double x = p.X;
-            double y = p.Y;
+            double progress = Math.Clamp(p.Age / 1.6, 0, 1);
+            double h = p.Height * (0.45 + progress * 0.9);
+            double spread = (2.0 + progress * 13.0) * scale;
+            double swayA = Math.Sin(p.Phase + progress * 5.0) * spread;
+            double swayB = Math.Sin(p.Phase + progress * 7.1 + 1.2) * spread * 0.72;
+            double x = p.X, y = p.Y;
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
             {
-                ctx.BeginFigure(new Point(x, y + h * 0.48), false, false);
-                ctx.BezierTo(
-                    new Point(x - sway * 0.25, y + h * 0.25),
-                    new Point(x + sway2 * 0.45, y + h * 0.18),
-                    new Point(x + sway, y), true, false);
+                ctx.BeginFigure(new Point(x, y + h), false, false);
+                ctx.BezierTo(new Point(x - spread * 0.15, y + h * 0.72), new Point(x + swayA * 0.25, y + h * 0.58), new Point(x + swayA * 0.42, y + h * 0.43), true, false);
+                ctx.BezierTo(new Point(x + swayA * 0.72, y + h * 0.28), new Point(x + swayB, y + h * 0.18), new Point(x + swayB * 0.82, y), true, false);
             }
             geometry.Freeze();
+            double fadeIn = Math.Clamp(progress * 5.0, 0, 1), fadeOut = Math.Clamp((1.0 - progress) * 1.35, 0, 1);
+            byte alpha = (byte)(Math.Clamp(p.Life, 0, 1) * fadeIn * fadeOut * 34);
+            SceneCanvas.Children.Add(new System.Windows.Shapes.Path { Data = geometry,
+                Stroke = new SolidColorBrush(Color.FromArgb(alpha, 226, 224, 216)),
+                StrokeThickness = p.Width * (0.8 + progress * 0.7), StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round, Opacity = 0.78, Tag = "smoke" });
 
-            byte alpha = (byte)(Math.Clamp(p.Life, 0, 1) * 58);
-            var wisp = new System.Windows.Shapes.Path
+            var softGeometry = new StreamGeometry();
+            using (var ctx = softGeometry.Open())
             {
-                Data = geometry,
-                Stroke = new SolidColorBrush(Color.FromArgb(alpha, 226, 222, 211)),
-                StrokeThickness = p.Width * (0.7 + p.Life * 0.45),
-                StrokeStartLineCap = PenLineCap.Round,
-                StrokeEndLineCap = PenLineCap.Round,
-                Opacity = Math.Clamp(p.Life * 1.15, 0, 0.72),
-                Tag = "smoke"
-            };
-            SceneCanvas.Children.Add(wisp);
-
-            // 一条更淡、更细的伴随烟线，增加自然的层次感。
-            var fineGeometry = new StreamGeometry();
-            using (var ctx = fineGeometry.Open())
-            {
-                ctx.BeginFigure(new Point(x + 2.2 * scale, y + h * 0.43), false, false);
-                ctx.BezierTo(
-                    new Point(x + sway * 0.12, y + h * 0.28),
-                    new Point(x + sway2 * 0.22 + 3 * scale, y + h * 0.12),
-                    new Point(x + sway * 0.55 + 2 * scale, y - 2 * scale), true, false);
+                ctx.BeginFigure(new Point(x - p.Width * 0.9, y + h * 0.94), false, false);
+                ctx.BezierTo(new Point(x - spread * 0.25, y + h * 0.68), new Point(x + swayA * 0.12 - p.Width, y + h * 0.38), new Point(x + swayB * 0.65 - p.Width * 1.4, y - scale), true, false);
             }
-            fineGeometry.Freeze();
-            SceneCanvas.Children.Add(new System.Windows.Shapes.Path
-            {
-                Data = fineGeometry,
-                Stroke = new SolidColorBrush(Color.FromArgb((byte)(alpha * 0.48), 239, 233, 220)),
-                StrokeThickness = Math.Max(0.55, p.Width * 0.48),
-                StrokeStartLineCap = PenLineCap.Round,
-                StrokeEndLineCap = PenLineCap.Round,
-                Opacity = Math.Clamp(p.Life * 0.48, 0, 0.38),
-                Tag = "smoke"
-            });
+            softGeometry.Freeze();
+            SceneCanvas.Children.Add(new System.Windows.Shapes.Path { Data = softGeometry,
+                Stroke = new SolidColorBrush(Color.FromArgb((byte)(alpha * 0.42), 239, 235, 225)),
+                StrokeThickness = Math.Max(0.55, p.Width * 0.58), StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round, Opacity = 0.42, Tag = "smoke" });
         }
     }
 
@@ -322,7 +299,7 @@ public partial class MainWindow : Window
             _isBurning = false;
             _burnTimer.Stop();
             StatusText.Text = "本次燃香已结束";
-            TimerText.Text = "香已燃尽";
+            TimerText.Text = string.Empty;
             if (_settings.PlaySoundOnFinish) System.Media.SystemSounds.Asterisk.Play();
             return;
         }
@@ -338,7 +315,7 @@ public partial class MainWindow : Window
             return;
         }
         StatusText.Text = _isPaused ? "燃香已暂停" : "香火正在燃烧";
-        TimerText.Text = $"剩余时间  {(int)_remaining.TotalHours:00}{_remaining:mm\\:ss}";
+        TimerText.Text = string.Empty;
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
@@ -349,7 +326,8 @@ public partial class MainWindow : Window
             _settings = dialog.Result;
             Width = Math.Clamp(_settings.WindowWidth, 260, 900);
             Height = Math.Clamp(_settings.WindowHeight, 300, 900);
-            Opacity = Math.Clamp(_settings.WindowOpacity, 0.35, 1.0);
+            Opacity = 1.0;
+            UpdateBackgroundAppearance();
             Topmost = _settings.AlwaysOnTop;
             _settings.DesktopLayerMode = !_settings.AlwaysOnTop;
             SettingsStore.Save(_settings);
@@ -379,7 +357,7 @@ public partial class MainWindow : Window
     {
         _settings.WindowWidth = Width;
         _settings.WindowHeight = Height;
-        _settings.WindowOpacity = Opacity;
+        _settings.WindowOpacity = Math.Clamp(_settings.WindowOpacity, 0, 1);
         _settings.AlwaysOnTop = Topmost;
         _settings.DesktopLayerMode = !Topmost;
         SettingsStore.Save(_settings);

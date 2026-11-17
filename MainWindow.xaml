@@ -6,7 +6,8 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="True"
         Topmost="False" Loaded="Window_Loaded" Closing="Window_Closing"
-        Deactivated="Window_Deactivated" SizeChanged="Window_SizeChanged">
+        Deactivated="Window_Deactivated" SizeChanged="Window_SizeChanged"
+        MouseLeave="Window_MouseLeave">
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem Header="上香" Click="LightIncense_Click"/>
@@ -24,22 +25,22 @@
                 <Canvas x:Name="SceneCanvas" IsHitTestVisible="False"/>
                 <!-- 默认隐藏标题与状态文字，让香炉成为唯一视觉主体。 -->
                 <TextBlock x:Name="StatusText" Visibility="Collapsed"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
-                            VerticalAlignment="Bottom" Margin="8,0,8,14">
+                <StackPanel x:Name="ControlPanel" Orientation="Horizontal" HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom" Margin="8,0,8,14" Visibility="Collapsed">
                     <Button Click="LightIncense_Click" Margin="5,0" Width="36" Height="36"
                             Padding="0" Background="#95652D" Foreground="#FFF2D5" BorderThickness="0"
-                            ToolTip="上香" ToolTipService.InitialShowDelay="350">
+                            ToolTip="上香" ToolTipService.InitialShowDelay="250">
                         <TextBlock Text="♨" FontFamily="Segoe UI Symbol" FontSize="19"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                     <Button x:Name="PauseButton" Content="Ⅱ" Click="Pause_Click" Margin="5,0"
                             Width="36" Height="36" Padding="0" Background="#594638"
                             Foreground="#FFF2D5" BorderThickness="0"
-                            ToolTip="暂停 / 继续" ToolTipService.InitialShowDelay="350"
+                            ToolTip="暂停 / 继续" ToolTipService.InitialShowDelay="250"
                             FontFamily="Segoe UI Symbol" FontSize="17"/>
                     <Button Click="Settings_Click" Margin="5,0" Width="36" Height="36"
                             Padding="0" Background="#594638" Foreground="#FFF2D5" BorderThickness="0"
-                            ToolTip="设置" ToolTipService.InitialShowDelay="350">
+                            ToolTip="设置" ToolTipService.InitialShowDelay="250">
                         <TextBlock Text="⚙" FontFamily="Segoe UI Symbol" FontSize="18"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>

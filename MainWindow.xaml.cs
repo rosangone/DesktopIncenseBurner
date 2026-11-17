@@ -12,14 +12,6 @@ namespace DesktopIncenseBurner;
 
 public partial class MainWindow : Window
 {
-    private const uint SWP_NOSIZE = 0x0001;
-    private const uint SWP_NOMOVE = 0x0002;
-    private const uint SWP_NOACTIVATE = 0x0010;
-    private static readonly IntPtr HWND_BOTTOM = new(1);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
-        int X, int Y, int cx, int cy, uint uFlags);
     private readonly DispatcherTimer _animationTimer = new() { Interval = TimeSpan.FromMilliseconds(40) };
     private readonly DispatcherTimer _burnTimer = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly Random _random = new();

@@ -36,7 +36,7 @@ public partial class MainWindow : Window
         Width = Math.Clamp(_settings.WindowWidth, 260, 900);
         Height = Math.Clamp(_settings.WindowHeight, 300, 900);
         Opacity = Math.Clamp(_settings.WindowOpacity, 0.35, 1.0);
-        Topmost = _settings.AlwaysOnTop;
+        Topmost = !_settings.DesktopLayerMode && _settings.AlwaysOnTop;
         _animationTimer.Tick += (_, _) => AnimateScene();
         _burnTimer.Tick += (_, _) => UpdateBurnTimer();
     }
@@ -56,10 +56,10 @@ public partial class MainWindow : Window
 
     private void SendToDesktopLayer()
     {
-        if (_settings.AlwaysOnTop || !IsLoaded) return;
+        if (!_settings.DesktopLayerMode || _settings.AlwaysOnTop || !IsLoaded) return;
         Dispatcher.BeginInvoke(new Action(() =>
         {
-            if (!IsLoaded || _settings.AlwaysOnTop) return;
+            if (!IsLoaded || !_settings.DesktopLayerMode || _settings.AlwaysOnTop) return;
             var handle = new WindowInteropHelper(this).Handle;
             if (handle != IntPtr.Zero)
                 SetWindowPos(handle, HWND_BOTTOM, 0, 0, 0, 0,
@@ -325,6 +325,7 @@ public partial class MainWindow : Window
             Height = Math.Clamp(_settings.WindowHeight, 300, 900);
             Opacity = Math.Clamp(_settings.WindowOpacity, 0.35, 1.0);
             Topmost = _settings.AlwaysOnTop;
+            _settings.DesktopLayerMode = !_settings.AlwaysOnTop;
             SettingsStore.Save(_settings);
             DrawBurner();
             SendToDesktopLayer();
@@ -354,6 +355,7 @@ public partial class MainWindow : Window
         _settings.WindowHeight = Height;
         _settings.WindowOpacity = Opacity;
         _settings.AlwaysOnTop = Topmost;
+        _settings.DesktopLayerMode = !Topmost;
         SettingsStore.Save(_settings);
     }
 

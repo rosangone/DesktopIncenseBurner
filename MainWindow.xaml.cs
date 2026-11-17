@@ -347,10 +347,24 @@ public partial class MainWindow : Window
     private void MainBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is Button || e.OriginalSource is Thumb) return;
+
+        // 第一次点击只唤出无文字图标；鼠标离开窗口后自动收起。
+        if (ControlPanel.Visibility != Visibility.Visible)
+        {
+            ControlPanel.Visibility = Visibility.Visible;
+            e.Handled = true;
+            return;
+        }
+
         if (e.ButtonState == MouseButtonState.Pressed)
         {
             try { DragMove(); } catch (InvalidOperationException) { }
         }
+    }
+
+    private void Window_MouseLeave(object sender, MouseEventArgs e)
+    {
+        ControlPanel.Visibility = Visibility.Collapsed;
     }
 
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)

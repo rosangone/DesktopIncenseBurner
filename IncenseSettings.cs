@@ -6,6 +6,7 @@ public sealed class IncenseSettings
     public double WindowHeight { get; set; } = 420;
     public double WindowOpacity { get; set; } = 1.0;
     public bool AlwaysOnTop { get; set; } = false;
+    public bool DesktopLayerMode { get; set; } = true;
     public int SmokeDensity { get; set; } = 45;
     public double SmokeSpeed { get; set; } = 1.0;
     public int IncenseCount { get; set; } = 1;

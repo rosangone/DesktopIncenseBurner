@@ -37,9 +37,7 @@
                     <Button Content="设置" Click="Settings_Click" Margin="4,0"
                             Padding="13,6" Background="#594638" Foreground="#FFF2D5" BorderThickness="0"/>
                 </StackPanel>
-                <TextBlock x:Name="TimerText" Text="尚未上香" Foreground="#E8D7C2"
-                           FontSize="11" HorizontalAlignment="Center"
-                           VerticalAlignment="Bottom" Margin="0,0,0,55"/>
+                <TextBlock x:Name="TimerText" Visibility="Collapsed"/>
                 <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
                         Width="22" Height="22" Margin="0,0,2,2"
                         Background="#B98B48" CornerRadius="3,0,18,0"

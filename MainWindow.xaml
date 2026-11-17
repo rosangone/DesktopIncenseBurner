@@ -17,8 +17,8 @@
         </ContextMenu>
     </Window.ContextMenu>
     <Grid>
-        <Border x:Name="MainBorder" CornerRadius="22" Background="#E91B1714"
-                BorderBrush="#C99A50" BorderThickness="1.4"
+        <Border x:Name="MainBorder" CornerRadius="22" Background="Transparent"
+                BorderBrush="Transparent" BorderThickness="0"
                 MouseLeftButtonDown="MainBorder_MouseLeftButtonDown">
             <Grid ClipToBounds="True">
                 <Canvas x:Name="SceneCanvas" IsHitTestVisible="False"/>

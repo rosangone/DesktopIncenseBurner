@@ -276,7 +276,7 @@ public partial class MainWindow : Window
         _isBurning = true;
         _isPaused = false;
         _burnTimer.Start();
-        PauseButton.Content = "暂停";
+        PauseButton.Content = "Ⅱ";
         DrawBurner();
         UpdateStatus();
     }
@@ -285,7 +285,7 @@ public partial class MainWindow : Window
     {
         if (!_isBurning) return;
         _isPaused = !_isPaused;
-        PauseButton.Content = _isPaused ? "继续" : "暂停";
+        PauseButton.Content = _isPaused ? "▶" : "Ⅱ";
         UpdateStatus();
     }
 

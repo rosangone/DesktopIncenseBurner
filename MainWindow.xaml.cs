@@ -123,28 +123,17 @@ public partial class MainWindow : Window
         AddText("回", cx + 42 * scale, baseY - 4 * scale, 24 * scale, "#F0C879", 17 * scale);
         AddText("✦", cx - 7 * scale, baseY - 30 * scale, 14 * scale, "#F6D58E", 12 * scale);
 
-        var plate = new Border
-        {
-            Width = 104 * scale, Height = 29 * scale,
-            CornerRadius = new CornerRadius(5 * scale),
-            Background = new LinearGradientBrush(Color.FromRgb(91, 48, 24), Color.FromRgb(135, 79, 35), 90),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(224, 181, 105)),
-            BorderThickness = new Thickness(1 * scale),
-            Child = new TextBlock
-            {
-                Text = string.IsNullOrWhiteSpace(_settings.Inscription) ? "招财进宝" : _settings.Inscription,
-                Foreground = new SolidColorBrush(Color.FromRgb(255, 220, 148)),
-                FontFamily = new FontFamily("KaiTi"),
-                FontSize = 15 * scale,
-                FontWeight = FontWeights.Bold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                TextAlignment = TextAlignment.Center
-            }
-        };
-        Canvas.SetLeft(plate, cx - plate.Width / 2);
-        Canvas.SetTop(plate, baseY + 1 * scale);
-        SceneCanvas.Children.Add(plate);
+        // 炉身直接錾刻铭文：不再使用外贴铭牌，让文字与铜胎融为一体。
+        string inscription = string.IsNullOrWhiteSpace(_settings.Inscription)
+            ? "招财进宝" : _settings.Inscription.Trim();
+        double inscriptionFontSize = Math.Min(15, 60.0 / Math.Max(4, inscription.Length)) * scale;
+        double inscriptionWidth = 118 * scale;
+        AddText(inscription, cx - inscriptionWidth / 2 + 0.7 * scale,
+            baseY + 4.5 * scale, inscriptionWidth, "#57351F", inscriptionFontSize);
+        AddText(inscription, cx - inscriptionWidth / 2,
+            baseY + 3.5 * scale, inscriptionWidth, "#F3D18E", inscriptionFontSize);
+        AddPath("M 0,0 C 8,-3 16,-3 24,0 M 94,0 C 102,-3 110,-3 118,0",
+            cx - 59 * scale, baseY + 2 * scale, scale, "Transparent", "#C18B4C", 0.8);
 
         AddEllipse(cx - 75 * scale, baseY - 54 * scale, 150 * scale, 19 * scale, "#A96E35", "#F0C982", 1.8);
         AddPath("M 0,12 C 4,0 16,0 20,12 L 18,19 L 2,19 Z",
@@ -208,24 +197,28 @@ public partial class MainWindow : Window
     private void AnimateScene()
     {
         if (!IsLoaded) return;
+
+        // 每帧只更新细长的曲线烟丝，不再生成圆形烟团。
         for (int i = SceneCanvas.Children.Count - 1; i >= 0; i--)
-            if (SceneCanvas.Children[i] is Ellipse el && el.Tag as string == "smoke")
+            if (SceneCanvas.Children[i] is System.Windows.Shapes.Path path && path.Tag as string == "smoke")
                 SceneCanvas.Children.RemoveAt(i);
 
+        double scale = Math.Min(ActualWidth / 360.0, ActualHeight / 420.0);
         if (_isBurning && !_isPaused)
         {
-            int spawn = Math.Clamp(_settings.SmokeDensity / 15, 1, 6);
-            double scale = Math.Min(ActualWidth / 360.0, ActualHeight / 420.0);
+            int spawn = Math.Clamp(_settings.SmokeDensity / 35, 1, 3);
             for (int i = 0; i < spawn; i++)
             {
                 _smoke.Add(new SmokeParticle
                 {
-                    X = ActualWidth / 2 + _random.NextDouble() * 24 * scale - 12 * scale,
-                    Y = ActualHeight * 0.73 - 178 * scale,
-                    Radius = (5 + _random.NextDouble() * 9) * scale,
-                    VelocityX = (_random.NextDouble() - 0.5) * 0.65 * scale,
-                    VelocityY = -(0.45 + _random.NextDouble() * 0.7) * _settings.SmokeSpeed * scale,
-                    Life = 1.0
+                    X = ActualWidth / 2 + (_random.NextDouble() - 0.5) * 12 * scale,
+                    Y = ActualHeight * 0.73 - 176 * scale,
+                    Age = 0,
+                    Life = 1.0,
+                    Phase = _random.NextDouble() * Math.PI * 2,
+                    Drift = (_random.NextDouble() - 0.5) * 0.7 * scale,
+                    Width = (1.0 + _random.NextDouble() * 1.1) * scale,
+                    Height = (54 + _random.NextDouble() * 48) * scale
                 });
             }
         }
@@ -233,25 +226,73 @@ public partial class MainWindow : Window
         for (int i = _smoke.Count - 1; i >= 0; i--)
         {
             var p = _smoke[i];
-            p.X += p.VelocityX;
-            p.Y += p.VelocityY;
-            p.Radius += 0.10;
-            p.Life -= 0.012;
-            if (p.Life <= 0 || p.Y < 20) { _smoke.RemoveAt(i); continue; }
+            p.Age += 0.025 * _settings.SmokeSpeed;
+            p.X += p.Drift + Math.Sin(p.Phase + p.Age * 5.2) * 0.24 * scale;
+            p.Y -= (0.8 + _settings.SmokeSpeed * 0.7) * scale;
+            p.Life -= 0.0065 * _settings.SmokeSpeed;
 
-            var cloud = new Ellipse
+            if (p.Life <= 0 || p.Age >= 1.0 || p.Y < 8)
             {
-                Width = p.Radius * 2, Height = p.Radius * 2,
-                Fill = new SolidColorBrush(Color.FromArgb((byte)(Math.Clamp(p.Life, 0, 1) * 48), 215, 211, 204)),
+                _smoke.RemoveAt(i);
+                continue;
+            }
+
+            // 烟丝随上升逐渐变长、变淡，并由多段贝塞尔曲线形成轻柔摆动。
+            double growth = Math.Min(1.0, p.Age * 2.4);
+            double h = p.Height * growth;
+            double sway = Math.Sin(p.Phase + p.Age * 5.2) * 10 * scale;
+            double sway2 = Math.Sin(p.Phase + p.Age * 7.4 + 1.1) * 13 * scale;
+            double x = p.X;
+            double y = p.Y;
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                ctx.BeginFigure(new Point(x, y + h * 0.48), false, false);
+                ctx.BezierTo(
+                    new Point(x - sway * 0.25, y + h * 0.25),
+                    new Point(x + sway2 * 0.45, y + h * 0.18),
+                    new Point(x + sway, y), true, false);
+            }
+            geometry.Freeze();
+
+            byte alpha = (byte)(Math.Clamp(p.Life, 0, 1) * 58);
+            var wisp = new System.Windows.Shapes.Path
+            {
+                Data = geometry,
+                Stroke = new SolidColorBrush(Color.FromArgb(alpha, 226, 222, 211)),
+                StrokeThickness = p.Width * (0.7 + p.Life * 0.45),
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                Opacity = Math.Clamp(p.Life * 1.15, 0, 0.72),
                 Tag = "smoke"
             };
-            Canvas.SetLeft(cloud, p.X - p.Radius);
-            Canvas.SetTop(cloud, p.Y - p.Radius);
-            SceneCanvas.Children.Add(cloud);
+            SceneCanvas.Children.Add(wisp);
+
+            // 一条更淡、更细的伴随烟线，增加自然的层次感。
+            var fineGeometry = new StreamGeometry();
+            using (var ctx = fineGeometry.Open())
+            {
+                ctx.BeginFigure(new Point(x + 2.2 * scale, y + h * 0.43), false, false);
+                ctx.BezierTo(
+                    new Point(x + sway * 0.12, y + h * 0.28),
+                    new Point(x + sway2 * 0.22 + 3 * scale, y + h * 0.12),
+                    new Point(x + sway * 0.55 + 2 * scale, y - 2 * scale), true, false);
+            }
+            fineGeometry.Freeze();
+            SceneCanvas.Children.Add(new System.Windows.Shapes.Path
+            {
+                Data = fineGeometry,
+                Stroke = new SolidColorBrush(Color.FromArgb((byte)(alpha * 0.48), 239, 233, 220)),
+                StrokeThickness = Math.Max(0.55, p.Width * 0.48),
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                Opacity = Math.Clamp(p.Life * 0.48, 0, 0.38),
+                Tag = "smoke"
+            });
         }
     }
 
-    private void LightIncense_Click(object sender, RoutedEventArgs e)
+        private void LightIncense_Click(object sender, RoutedEventArgs e)
     {
         _settings.IncenseCount = Math.Clamp(_settings.IncenseCount, 1, 3);
         _remaining = TimeSpan.FromMinutes(Math.Clamp(_settings.BurnMinutes, 1, 1440));
@@ -348,6 +389,6 @@ public partial class MainWindow : Window
 
     private sealed class SmokeParticle
     {
-        public double X, Y, Radius, VelocityX, VelocityY, Life;
+        public double X, Y, Age, Life, Phase, Drift, Width, Height;
     }
 }

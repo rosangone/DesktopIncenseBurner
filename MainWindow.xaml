@@ -4,8 +4,9 @@
         Title="Desktop Incense Burner"
         Width="360" Height="420" MinWidth="260" MinHeight="300"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
-        ResizeMode="CanResizeWithGrip" ShowInTaskbar="True"
-        Topmost="True" Loaded="Window_Loaded" Closing="Window_Closing">
+        ResizeMode="NoResize" ShowInTaskbar="True"
+        Topmost="False" Loaded="Window_Loaded" Closing="Window_Closing"
+        Deactivated="Window_Deactivated" SizeChanged="Window_SizeChanged">
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem Header="上香" Click="LightIncense_Click"/>
@@ -17,28 +18,35 @@
     </Window.ContextMenu>
     <Grid>
         <Border x:Name="MainBorder" CornerRadius="22" Background="#E91B1714"
-                BorderBrush="#B77D3E" BorderThickness="1.2"
+                BorderBrush="#C99A50" BorderThickness="1.4"
                 MouseLeftButtonDown="MainBorder_MouseLeftButtonDown">
             <Grid ClipToBounds="True">
                 <Canvas x:Name="SceneCanvas" IsHitTestVisible="False"/>
                 <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,12,0,0">
-                    <TextBlock Text="DESKTOP INCENSE" Foreground="#E8C99B"
-                               FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="吉祥如意 · 古韵铜炉" Foreground="#E9C77F"
+                               FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="StatusText" Text="香火安宁" Foreground="#E8D7C2"
                                FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                             VerticalAlignment="Bottom" Margin="8,0,8,14">
                     <Button Content="上香" Click="LightIncense_Click" Margin="4,0"
-                            Padding="13,6" Background="#8D5B31" Foreground="White" BorderThickness="0"/>
+                            Padding="13,6" Background="#95652D" Foreground="#FFF2D5" BorderThickness="0"/>
                     <Button x:Name="PauseButton" Content="暂停" Click="Pause_Click" Margin="4,0"
-                            Padding="13,6" Background="#594638" Foreground="White" BorderThickness="0"/>
+                            Padding="13,6" Background="#594638" Foreground="#FFF2D5" BorderThickness="0"/>
                     <Button Content="设置" Click="Settings_Click" Margin="4,0"
-                            Padding="13,6" Background="#594638" Foreground="White" BorderThickness="0"/>
+                            Padding="13,6" Background="#594638" Foreground="#FFF2D5" BorderThickness="0"/>
                 </StackPanel>
                 <TextBlock x:Name="TimerText" Text="尚未上香" Foreground="#E8D7C2"
                            FontSize="11" HorizontalAlignment="Center"
                            VerticalAlignment="Bottom" Margin="0,0,0,55"/>
+                <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                        Width="22" Height="22" Margin="0,0,2,2"
+                        Background="#B98B48" CornerRadius="3,0,18,0"
+                        Opacity="0.9" IsHitTestVisible="False"/>
+                <Thumb x:Name="ResizeThumb" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                       Width="22" Height="22" Cursor="SizeNWSE" Background="Transparent"
+                       DragDelta="ResizeThumb_DragDelta" ToolTip="拖动此处调整香炉大小"/>
             </Grid>
         </Border>
     </Grid>

@@ -13,9 +13,18 @@
         <TextBlock Text="古韵铜炉 · 桌面设置" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,14"/>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <TextBlock Text="香炉铭文（可自定义）"/>
-                <TextBox x:Name="InscriptionBox" MaxLength="12" Margin="0,5,0,12"
-                         ToolTip="例如：招财进宝、平安喜乐、福寿安康"/>
+                <TextBlock Text="炉身铭文 · 仿古铜刻字" Foreground="#E6C17B" FontWeight="SemiBold"/>
+                <Border Margin="0,6,0,14" Padding="7" CornerRadius="7" BorderThickness="2" BorderBrush="#B88945">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#E0B66D" Offset="0"/><GradientStop Color="#A87536" Offset="0.48"/><GradientStop Color="#D3A45C" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <TextBox x:Name="InscriptionBox" MaxLength="12" Padding="8,7" Background="#18FFFFFF"
+                             BorderThickness="1" BorderBrush="#70451F" Foreground="#4C2C17" CaretBrush="#4C2C17"
+                             FontSize="17" FontWeight="Bold" TextAlignment="Center"
+                             ToolTip="例如：招财进宝、平安喜乐、福寿安康"/>
+                </Border>
                 <TextBlock Text="窗口尺寸（宽 × 高，像素）"/>
                 <Grid Margin="0,5,0,12">
                     <Grid.ColumnDefinitions>
@@ -40,8 +49,8 @@
                         IsSnapToTickEnabled="True" Margin="0,5,0,12"/>
                 <TextBlock Text="烟雾速度"/>
                 <Slider x:Name="SpeedSlider" Minimum="0.3" Maximum="2.5" Margin="0,5,0,12"/>
-                <TextBlock Text="窗口透明度"/>
-                <Slider x:Name="OpacitySlider" Minimum="0.35" Maximum="1" Margin="0,5,0,12"/>
+                <TextBlock Text="背景透明度（不影响香炉与烟雾）"/>
+                <Slider x:Name="OpacitySlider" Minimum="0" Maximum="1" Margin="0,5,0,12"/>
                 <CheckBox x:Name="TopmostCheck" Content="始终置顶（开启后会覆盖浏览器等窗口）" Margin="0,4,0,10"/>
                 <TextBlock Text="关闭始终置顶时，香炉会停留在桌面层，普通窗口可覆盖它。"
                            Foreground="#C7B49E" TextWrapping="Wrap" FontSize="11" Margin="0,0,0,8"/>

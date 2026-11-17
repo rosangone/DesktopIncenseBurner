@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -57,15 +55,9 @@ public partial class MainWindow : Window
 
     private void SendToDesktopLayer()
     {
-        if (!_settings.DesktopLayerMode || _settings.AlwaysOnTop || !IsLoaded) return;
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-            if (!IsLoaded || !_settings.DesktopLayerMode || _settings.AlwaysOnTop) return;
-            var handle = new WindowInteropHelper(this).Handle;
-            if (handle != IntPtr.Zero)
-                SetWindowPos(handle, HWND_BOTTOM, 0, 0, 0, 0,
-                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-        }), DispatcherPriority.Background);
+        // Desktop mode is a normal non-topmost window: other applications cover it,
+        // while it remains visible on the desktop when no other window is in front.
+        if (_settings.DesktopLayerMode) Topmost = false;
     }
 
     private void Window_Deactivated(object? sender, EventArgs e) => SendToDesktopLayer();

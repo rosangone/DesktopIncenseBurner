@@ -22,20 +22,27 @@
                 MouseLeftButtonDown="MainBorder_MouseLeftButtonDown">
             <Grid ClipToBounds="True">
                 <Canvas x:Name="SceneCanvas" IsHitTestVisible="False"/>
-                <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,12,0,0">
-                    <TextBlock Text="吉祥如意 · 古韵铜炉" Foreground="#E9C77F"
-                               FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="StatusText" Text="香火安宁" Foreground="#E8D7C2"
-                               FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
-                </StackPanel>
+                <!-- 默认隐藏标题与状态文字，让香炉成为唯一视觉主体。 -->
+                <TextBlock x:Name="StatusText" Visibility="Collapsed"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                             VerticalAlignment="Bottom" Margin="8,0,8,14">
-                    <Button Content="上香" Click="LightIncense_Click" Margin="4,0"
-                            Padding="13,6" Background="#95652D" Foreground="#FFF2D5" BorderThickness="0"/>
-                    <Button x:Name="PauseButton" Content="暂停" Click="Pause_Click" Margin="4,0"
-                            Padding="13,6" Background="#594638" Foreground="#FFF2D5" BorderThickness="0"/>
-                    <Button Content="设置" Click="Settings_Click" Margin="4,0"
-                            Padding="13,6" Background="#594638" Foreground="#FFF2D5" BorderThickness="0"/>
+                    <Button Click="LightIncense_Click" Margin="5,0" Width="36" Height="36"
+                            Padding="0" Background="#95652D" Foreground="#FFF2D5" BorderThickness="0"
+                            ToolTip="上香" ToolTipService.InitialShowDelay="350">
+                        <TextBlock Text="♨" FontFamily="Segoe UI Symbol" FontSize="19"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    <Button x:Name="PauseButton" Content="Ⅱ" Click="Pause_Click" Margin="5,0"
+                            Width="36" Height="36" Padding="0" Background="#594638"
+                            Foreground="#FFF2D5" BorderThickness="0"
+                            ToolTip="暂停 / 继续" ToolTipService.InitialShowDelay="350"
+                            FontFamily="Segoe UI Symbol" FontSize="17"/>
+                    <Button Click="Settings_Click" Margin="5,0" Width="36" Height="36"
+                            Padding="0" Background="#594638" Foreground="#FFF2D5" BorderThickness="0"
+                            ToolTip="设置" ToolTipService.InitialShowDelay="350">
+                        <TextBlock Text="⚙" FontFamily="Segoe UI Symbol" FontSize="18"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
                 </StackPanel>
                 <TextBlock x:Name="TimerText" Visibility="Collapsed"/>
                 <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"

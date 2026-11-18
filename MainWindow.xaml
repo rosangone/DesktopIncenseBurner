@@ -48,10 +48,12 @@
                 <TextBlock x:Name="TimerText" Visibility="Collapsed"/>
                 <Thumb x:Name="ResizeThumb" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                        Width="22" Height="22" Cursor="SizeNWSE" Background="Transparent"
+                       OverridesDefaultStyle="True" Focusable="False" IsTabStop="False"
+                       FocusVisualStyle="{x:Null}"
                        DragDelta="ResizeThumb_DragDelta" ToolTip="拖动此处调整香炉大小">
                     <Thumb.Template>
                         <ControlTemplate TargetType="{x:Type Thumb}">
-                            <Border Background="Transparent"/>
+                            <Grid Background="Transparent"/>
                         </ControlTemplate>
                     </Thumb.Template>
                 </Thumb>
